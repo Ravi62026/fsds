@@ -1,0 +1,9 @@
+pandas
+scikit-learn
+numpy
+streamlit
+groq
+together
+openai
+
+-e.
