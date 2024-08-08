@@ -68,10 +68,6 @@ class DataTransformation:
             ])
             
             return preprocessor
-            
-
-            
-            
         
         except Exception as e:
             logging.info("Exception occurred in the initiate_dataTransformation")
