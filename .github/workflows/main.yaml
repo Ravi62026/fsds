@@ -6,7 +6,7 @@ name: Build and deploy container app to Azure Web App - testyoutubelive
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -14,38 +14,32 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-    - uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
+    - name: Check out code
       uses: docker/setup-buildx-action@v2
 
-    - name: Log in to registry
-      uses: docker/login-action@v2
-      with:
-        registry: https://youtubelive.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_222fce1e760a47159560396e07cbe3e3 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_e4ce65e372284ff387b06b9265baa0db }}
 
-    - name: Build and push container image to registry
-      uses: docker/build-push-action@v3
-      with:
-        push: true
-        tags: youtubelive.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_222fce1e760a47159560396e07cbe3e3 }}/youtubecomm:${{ github.sha }}
-        file: ./Dockerfile
+    - name: Install Utilities
+      run: |
+            sudo apt-get update -y
+            sudo apt-get install -y jq unzip
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
+    - name: Configure AWS credentials
+      uses: aws-action/configure-aws-credentials@v1
       with:
-        app-name: 'testyoutubelive'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_0b3e00bc24ea43c5b365aff4ad79f4a9 }}
-        images: 'youtubelive.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_222fce1e760a47159560396e07cbe3e3 }}/youtubecomm:${{ github.sha }}'
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Login to Amazon ECR
+      id: login_ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ecr
+      env:
+        ECR_REGISTRY: ${{steps.login_ecr.outputs.registry}}
+        ECR_REPOSITORY: dimondprice
+        IMAGE_TAG: latest
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
