@@ -9,4 +9,7 @@ seaborn
 matplotlib
 Flask
 
+mlflow
+dvc
+dagshub
 -e.
