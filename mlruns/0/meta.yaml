@@ -1,6 +1,6 @@
-artifact_location: file:///C:/Users/ravi1/OneDrive/Desktop/fsds/mlruns/0
-creation_time: 1723291123080
+artifact_location: mlflow-artifacts:/0
+creation_time: 1723311289851
 experiment_id: '0'
-last_update_time: 1723291123080
+last_update_time: 1723311289851
 lifecycle_stage: active
 name: Default
